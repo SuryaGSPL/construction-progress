@@ -3,7 +3,7 @@ import react from "@vitejs/plugin-react";
 
 
 export default defineConfig({
-  base: "/three-d-viewer/",
+  base: "/construction-progress/",
   root: "./src",
   publicDir: "../public",
   server: {
