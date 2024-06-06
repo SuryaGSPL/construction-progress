@@ -1,0 +1,9 @@
+.input-panel {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    padding: 2%;
+    width: fit-content;
+}
