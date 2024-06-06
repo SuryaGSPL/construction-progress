@@ -124,6 +124,12 @@ function ProgressBar({ startDate, endDate }: Props) {
 
     const monthLabels = generateLabels();
     const theme = useTheme();
+    const formatDate = (date: Date): string => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
 
     return (
         <Stack direction={"column"} spacing={2}>
@@ -137,10 +143,10 @@ function ProgressBar({ startDate, endDate }: Props) {
                 >
                     {
                         isEditing ? (
-                            <Stack direction={"row"} spacing={2} sx={{ alignItems: 'center' }}>
+                            <Stack direction={"row"} spacing={2} sx={{ alignItems: 'center', cursor: 'pointer' }}>
                                 <TextField
                                     type='date'
-                                    value={currentDate}
+                                    value={formatDate(currentDate)}
                                     onChange={(e) => setCurrentDate(new Date(e.target.value))}
                                 />
                                 <CheckRounded fontSize='large' onClick={() => setIsEditing(false)} />
@@ -148,7 +154,11 @@ function ProgressBar({ startDate, endDate }: Props) {
                         ) :
                             <Stack direction={"row"} spacing={2} sx={{ alignItems: 'center' }}>
                                 <Typography className='info' sx={{ userSelect: 'none' }}>{currentDate.toDateString()}</Typography>
-                            <EditRounded fontSize='medium' onClick={() => setIsEditing(true)} />
+                                <EditRounded fontSize='medium' sx={{ cursor: 'pointer' }}
+                                    onClick={() => {
+                                        setIsEditing(true)
+                                        setIsPlaying(false)
+                                    }} />
                             </Stack>
                     }
                 </Paper>
