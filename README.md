@@ -1,5 +1,3 @@
-# Web Ifc Viewer
+# Web Ifc Viewer to view construction progress
 
 ---
-
-IfcContainer && App Component contains the required code
