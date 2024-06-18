@@ -7,6 +7,14 @@ import { IfcContainer } from '../ifc-container/IfcContainer';
 import "./ModelEnvironment.css";
 
 
+interface IfcRecord {
+    [key: string]: any;
+}
+
+interface ModelEnvironmentProps {
+    file: File | null;
+    fileInputRef: React.RefObject<HTMLInputElement>;
+}
 
 export default function ModelEnvironment({ file, fileInputRef }: any) {
     const [loading, setLoading] = useState<boolean>(false);
@@ -20,7 +28,7 @@ export default function ModelEnvironment({ file, fileInputRef }: any) {
 
     useEffect(() => {
         if (ifcContainerRef.current) {
-        
+
 
             const container = ifcContainerRef.current;
             console.log('container', container);
@@ -47,6 +55,19 @@ export default function ModelEnvironment({ file, fileInputRef }: any) {
         }
     }, [file]);
 
+    useEffect(() => {
+        const fetchElements = async () => {
+            if (modelID !== null) {
+                const allElements = await getAllElements(modelID);
+                console.log('Elements', allElements);
+                setElements(allElements);
+            }
+        };
+        fetchElements();
+    }, [modelID]);
+
+
+
     const ifcOnLoad = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file && ifcViewer) {
@@ -66,9 +87,6 @@ export default function ModelEnvironment({ file, fileInputRef }: any) {
                 console.log('render shadow');
                 setModelID(model.modelID);
                 setModelLoadingStatus(true);
-                // const properties = await ifcViewer.IFC.selector.(model.modelID, 661748);
-                // console.log('properties', properties);
-            
             } catch (error) {
                 ifcOnLoadError(error);
             } finally {
@@ -85,11 +103,54 @@ export default function ModelEnvironment({ file, fileInputRef }: any) {
         }
     };
 
+
     const ifcOnLoadError = (err: any) => {
         console.error('IFC Loading Error:', err);
         setIfcLoadingErrorMessage(`Error loading IFC: ${err.message || err}`);
     };
+    const getAllElements = async (modelID: any): Promise<IfcRecord[]> => {
+        const ifcManager = ifcViewer?.IFC.loader.ifcManager;
+        const allItems: IfcRecord[] = [];
+        if (ifcManager) {
+            const tree = await ifcManager.getSpatialStructure(modelID, true);
+            const queue = [tree];
+            while (queue.length > 0) {
+                const node = queue.shift();
+                if (node) {
+                    if (node.children && node.children.length > 0) {
+                        queue.push(...node.children);
+                    }
+                    const properties = await ifcManager.getItemProperties(modelID, node.expressID, true);
+                    if (properties) {
+                        const elementProps = await getAllProperties(modelID, node.expressID);
+                        allItems.push(elementProps);
+                    }
+                }
+            }
+        }
+        return allItems;
+    };
 
+    const getAllProperties = async (modelID: any, expressID: number): Promise<IfcRecord> => {
+        const ifcManager = ifcViewer?.IFC.loader.ifcManager;
+        const elementProps: IfcRecord = {};
+        if (ifcManager) {
+            const props = await ifcManager.getItemProperties(modelID, expressID, true);
+            const type = ifcManager.getIfcType(modelID, expressID);
+
+            elementProps["Entity Type"] = type;
+            elementProps["GlobalId"] = props?.GlobalId?.value || 'N/A';
+            elementProps["Name"] = props?.Name?.value || 'N/A';
+            elementProps["ObjectType"] = props?.ObjectType?.value || 'N/A';
+            elementProps["PredefinedType"] = props?.PredefinedType?.value || 'N/A';
+
+            // Add all properties
+            for (const [key, value] of Object.entries(props || {})) {
+                elementProps[key] = value && typeof value === 'object' && 'value' in value ? value.value : value;
+            }
+        }
+        return elementProps;
+    };
     const disposeModel = (model: any) => {
         if (model) {
             model.traverse((child: any) => {
@@ -118,12 +179,12 @@ export default function ModelEnvironment({ file, fileInputRef }: any) {
                 ifcViewer.shadowDropper.deleteShadow(modelID.toString());
 
                 const scene = ifcViewer.context.getScene();
-                
-                
+
+
                 if (model) {
                     disposeModel(model);
                 }
-                
+
                 ifcViewer.IFC.loader.ifcManager.close(modelID, scene);
                 // ifcViewer.IFC.loader.ifcManager.dispose();
                 setModelLoadingStatus(false);
