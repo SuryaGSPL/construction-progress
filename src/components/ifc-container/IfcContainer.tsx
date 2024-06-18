@@ -1,4 +1,4 @@
-import React, { forwardRef, Fragment } from "react";
+import React, { forwardRef, Fragment, useEffect, useState } from "react";
 import { Grid, Popover, Typography } from "@mui/material";
 
 interface IfcRecord {
@@ -11,8 +11,10 @@ interface IfcContainerProps {
 
 export const IfcContainer = forwardRef<HTMLDivElement, IfcContainerProps>(
   function IfcContainerFunc(props, ref) {
-    const [popoverOpen, setPopoverOpen] = React.useState(false);
-    const [curIfcRecords, setIfcRecords] = React.useState<IfcRecord>();
+    const [popoverOpen, setPopoverOpen] = useState(false);
+    const [curIfcRecords, setIfcRecords] = useState<IfcRecord>();
+    const [isCtrlPressed, setIsCtrlPressed] = useState(false);
+
 
     const viewer = props.viewer;
     const id = popoverOpen ? "simple-popover" : undefined;
@@ -30,7 +32,7 @@ export const IfcContainer = forwardRef<HTMLDivElement, IfcContainerProps>(
             result.id,
             false
           );
-          console.log(props);
+          console.log("Properties Container", props);
           const type = viewer.IFC.loader.ifcManager.getIfcType(
             result.modelID,
             result.id
@@ -59,6 +61,35 @@ export const IfcContainer = forwardRef<HTMLDivElement, IfcContainerProps>(
       }
     };
 
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Control') {
+        setIsCtrlPressed(true);
+      }
+    };
+
+    const handleKeyUp = (event: KeyboardEvent) => {
+      if (event.key === 'Control') {
+        setIsCtrlPressed(false);
+      }
+    };
+
+    const handleMouseMove = (event: React.MouseEvent) => {
+      if (isCtrlPressed) {
+        viewer.IFC.selector.prePickIfcItem();
+      }
+    };
+
+    useEffect(() => {
+      window.addEventListener('keydown', handleKeyDown);
+      window.addEventListener('keyup', handleKeyUp);
+
+      return () => {
+        window.removeEventListener('keydown', handleKeyDown);
+        window.removeEventListener('keyup', handleKeyUp);
+      };
+    }, []);
+
     return (
       <>
         <div
@@ -66,7 +97,7 @@ export const IfcContainer = forwardRef<HTMLDivElement, IfcContainerProps>(
           ref={ref}
           onDoubleClick={ifcOnDoubleClick}
           onContextMenu={ifcOnRightClick}
-          onMouseMove={viewer && (() => viewer.IFC.selector.prePickIfcItem())}
+          onMouseMove={viewer && handleMouseMove}
           style={{
             position: "relative",
             width: "80vw",

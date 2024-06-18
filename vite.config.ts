@@ -3,7 +3,7 @@ import react from "@vitejs/plugin-react";
 
 
 export default defineConfig({
-  base: "/construction-progress/",
+  base: "./",
   root: "./src",
   publicDir: "../public",
   server: {

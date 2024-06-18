@@ -8,17 +8,18 @@ import { Container, Paper, Stack, TextField } from '@mui/material';
 export default function App() {
   const [startDate, setStartDate] = useState<string>('2023-01-31');
   const [endDate, setEndDate] = useState<string>('2023-12-31');
-
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [file, setFile] = useState<any>(null);
 
   return (
     <div className='App'>
 
       <Stack direction='row'>
-        <ModelEnvironment file={file} />
+        <ModelEnvironment file={file} fileInputRef={fileInputRef}/>
         <Stack sx={{ alignItems: 'center' }}>
           <TextField
             type="file"
+            ref={fileInputRef}
             onChange={(e) => { setFile(e) }}
             inputProps={{ 'aria-label': 'Upload IFC file', accept: '.ifc' }}
             variant="outlined"

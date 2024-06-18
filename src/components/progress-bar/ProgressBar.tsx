@@ -19,7 +19,7 @@ type Props = {
 function ProgressBar({ startDate, endDate }: Props) {
 
     const [currentDate, setCurrentDate] = useState<Date>(new Date(startDate));
-    const [isPlaying, setIsPlaying] = useState<boolean>(true);
+    const [isPlaying, setIsPlaying] = useState<boolean>(false);
     const [isProgressBarHover, setIsProgressBarHover] = useState<boolean>(false);
     const [isEditing, setIsEditing] = useState<boolean>(false);
     const progressBarRef = useRef<HTMLDivElement | null>(null);
