@@ -1,5 +1,5 @@
 # Web Ifc Viewer to view construction progress
-
+Preview: https://graspear.github.io/construction-progress/
 ---
 Use "npm install" if it throw error: use "npm install --force"
 
